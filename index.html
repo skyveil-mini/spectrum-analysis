@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spectrum Absorbance Analysis</title>
+    <script async src="https://docs.opencv.org/master/opencv.js" onload="console.log('OpenCV Loaded!')"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-mode">
+    <div class="container">
+        <header>
+            <h1>Spectrum Absorbance Analysis</h1>
+            <p>A tool for analyzing the spectrometer output spectrum using OpenCV.js</p>
+        </header>
+
+        <div class="instructions">
+            <h2>Instructions</h2>
+            <p>
+            To begin the analysis, input the cropped spectrum of both the blank (empty cuvette without any solution) 
+            and the sample (cuvette with the desired solution) in the respective input fields.
+            </p>
+        </div>
+
+        <!-- Image display sections -->
+        <div class="image-container">
+            <div class="image-box">
+                <h3>Image displaying blank reading</h3>
+                <img id="blankReadingImg" src="assets/blank.jpeg" alt="Blank reading will appear here">
+            </div>
+            <div class="image-box">
+                <h3>Image displaying sample reading</h3>
+                <img id="sampleReadingImg" src="assets/sample.jpeg" alt="Sample reading will appear here">
+            </div>
+        </div>
+
+        <div class="image-container">
+            <div class="image-box">
+                <h3>Image displaying blank spectrum</h3>
+                <img id="blankSpectrumImg" src="assets/blank-spectrum.jpeg" alt="Blank spectrum will appear here">
+            </div>
+            <div class="image-box">
+                <h3>Image displaying sample spectrum</h3>
+                <img id="sampleSpectrumImg" src="assets/sample-spectrum.jpeg" alt="Sample spectrum will appear here">
+            </div>
+        </div>
+
+
+        <section class="input-section">
+            <div class="input-container">
+                <label for="blankInput" class="file-label">
+                    <input type="file" id="blankInput" accept="image/*" hidden>
+                    <div class="image-preview" id="blankPreview">
+                        <span>Upload Blank Image</span>
+                    </div>
+                </label>
+
+                <label for="sampleInput" class="file-label">
+                    <input type="file" id="sampleInput" accept="image/*" hidden>
+                    <div class="image-preview" id="samplePreview">
+                        <span>Upload Sample Image</span>
+                    </div>
+                </label>
+            </div>
+            <button class="analyze-btn" onclick="processImages()">Analyze Spectrum</button>
+        </section>
+
+        <section class="chart-section">
+            <div class="chart-container">
+                <h3>Absorbance (RGB Channels)</h3>
+                <canvas id="absorbanceChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3>Total Absorbance</h3>
+                <canvas id="totalAbsorbanceChart"></canvas>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
