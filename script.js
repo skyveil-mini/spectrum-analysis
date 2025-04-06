@@ -350,7 +350,7 @@ function predictConcentration() {
     const { slope, intercept } = window.regressionModel;
     const predicted = (input - intercept) / slope;
 
-    result.textContent = `Predicted Concentration: ${predicted.toFixed(3)}`;
+    result.textContent = `Predicted Concentration: ${(predicted * 100).toFixed(3)}%`;
 }
 
 function displayRegressionEquation(m, b) {
@@ -368,11 +368,9 @@ function displayRegressionEquation(m, b) {
 
 // Default calibration values: [concentration, absorbance]
 const defaultCalibrationData = [
-    { concentration: 0.1, absorbance: 0.05 },
-    { concentration: 0.3, absorbance: 0.15 },
-    { concentration: 0.5, absorbance: 0.25 },
-    { concentration: 0.7, absorbance: 0.35 },
-    { concentration: 0.9, absorbance: 0.45 }
+    { concentration: 0.14285714285714285, absorbance: 0.097 },
+    { concentration: 0.2857142857142857, absorbance: 0.154 }, // 0.055, 0.583, 0.263, 0.010, -0.141
+    { concentration: 0.42857142857142855, absorbance: 0.25125 }, // 0.102, 0.200, 0.375, 0.328
 ];
 
 // Load default values into the inputs and update the chart
