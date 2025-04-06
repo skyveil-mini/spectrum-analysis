@@ -57,8 +57,12 @@ function processImages() {
                 absorbanceTotal.push((A_R + A_G + A_B) / 3);
             }
 
+            const finalAbsorbance = absorbanceTotal.reduce((sum, val) => sum + val, 0) / absorbanceTotal.length;
+            document.getElementById("finalAbsorbanceValue").textContent = `Final Absorbance: ${finalAbsorbance.toFixed(3)}`;
+
             plotAbsorbanceChart(wavelengths, absorbanceRed, absorbanceGreen, absorbanceBlue);
             plotTotalAbsorbanceChart(wavelengths, absorbanceTotal);
+            plotMajorWavelengthsAbsorption(wavelengths, absorbanceTotal);
         };
 
         sampleImg.src = URL.createObjectURL(sampleInput);
@@ -69,6 +73,7 @@ function processImages() {
 
 let absorbanceChart;
 let totalAbsorbanceChart;
+let majorAbsorptionChart;
 
 // Function to plot the individual RGB absorbance graph
 function plotAbsorbanceChart(wavelengths, absorbanceRed, absorbanceGreen, absorbanceBlue) {
@@ -100,8 +105,8 @@ function plotAbsorbanceChart(wavelengths, absorbanceRed, absorbanceGreen, absorb
                 y: {
                     title: { display: true, text: "Absorbance", color: "#ccc" },
                     grid: { color: "rgba(255, 255, 255, 0.1)" },
-                    min: -1,
-                    max: 1,
+                    min: Math.max(-1, Math.min(...absorbanceRed, ...absorbanceGreen, ...absorbanceBlue) - 0.2),
+                    max: Math.min(1, Math.max(...absorbanceRed, ...absorbanceGreen, ...absorbanceBlue) + 0.2),
                     ticks: { color: "#ddd" }
                 }
             },
@@ -144,8 +149,8 @@ function plotTotalAbsorbanceChart(wavelengths, absorbanceTotal) {
                 y: {
                     title: { display: true, text: "Absorbance", color: "#ccc" },
                     grid: { color: "rgba(255, 255, 255, 0.1)" },
-                    min: -1,
-                    max: 1,
+                    min: Math.max(-1, Math.min(...absorbanceTotal) - 0.2),
+                    max: Math.min(1, Math.max(...absorbanceTotal) + 0.2),
                     ticks: { color: "#ddd" }
                 }
             },
@@ -156,6 +161,42 @@ function plotTotalAbsorbanceChart(wavelengths, absorbanceTotal) {
                     pan: { enabled: true, mode: "x" },
                     zoom: { wheel: { enabled: true }, mode: "x", pinch: { enabled: true } }
                 }
+            }
+        }
+    });
+}
+
+function plotMajorWavelengthsAbsorption(wavelengths, absorbanceValues) {
+    const majorWavelengths = [400, 500, 600, 700]; // Major visible spectrum points
+    const absorbanceAtMajorWavelengths = majorWavelengths.map(wavelength => {
+        const index = wavelengths.indexOf(wavelength);
+        return index !== -1 ? absorbanceValues[index] : 0; // Use 0 if not found
+    });
+
+    const ctx = document.getElementById("majorAbsorptionChart").getContext("2d");
+
+    // Destroy existing chart before creating a new one
+    if (majorAbsorptionChart) {
+        majorAbsorptionChart.destroy();
+    }
+
+    majorAbsorptionChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: majorWavelengths.map(w => `${w} nm`), // Labels for x-axis
+            datasets: [{
+                label: "Absorbance at Major Wavelengths",
+                data: absorbanceAtMajorWavelengths,
+                backgroundColor: ["blue", "green", "orange", "red"], // Colors per wavelength
+                borderColor: "black",
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { min: -1, max: 1 } // Keep the absorbance range from -1 to 1
             }
         }
     });
@@ -203,3 +244,145 @@ function adjustHeights() {
     sampleLabel.style.height = `${maxHeight}px`;
 }
 
+const calibrationData = {
+    concentrations: [],
+    absorbances: []
+};
+
+document.getElementById("calibrationForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const concInput = document.getElementById("concentrationInput");
+    const absInput = document.getElementById("absorbanceInput");
+
+    const concentration = parseFloat(concInput.value);
+    const absorbance = parseFloat(absInput.value);
+
+    if (!isNaN(concentration) && !isNaN(absorbance)) {
+        calibrationData.concentrations.push(concentration);
+        calibrationData.absorbances.push(absorbance);
+
+        concInput.value = "";
+        absInput.value = "";
+
+        plotCalibrationCurve(calibrationData.concentrations, calibrationData.absorbances);
+    }
+});
+
+let calibrationChart;
+
+function plotCalibrationCurve(concentrations, absorbances) {
+    const ctx = document.getElementById("calibrationChart").getContext("2d");
+
+    if (calibrationChart) calibrationChart.destroy();
+
+    // Calculate linear regression (least squares)
+    const n = concentrations.length;
+    const sumX = concentrations.reduce((a, b) => a + b, 0);
+    const sumY = absorbances.reduce((a, b) => a + b, 0);
+    const sumXY = concentrations.reduce((sum, x, i) => sum + x * absorbances[i], 0);
+    const sumX2 = concentrations.reduce((sum, x) => sum + x * x, 0);
+
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
+
+    // Generate regression line points
+    const minX = Math.min(...concentrations);
+    const maxX = Math.max(...concentrations);
+    const regressionLine = [
+        { x: minX, y: slope * minX + intercept },
+        { x: maxX, y: slope * maxX + intercept }
+    ];
+
+    // Update equation display
+    displayRegressionEquation(slope, intercept);
+
+    calibrationChart = new Chart(ctx, {
+        type: "scatter",
+        data: {
+            datasets: [
+                {
+                    label: "Calibration Points",
+                    data: concentrations.map((c, i) => ({ x: c, y: absorbances[i] })),
+                    backgroundColor: "orange",
+                    pointRadius: 5,
+                },
+                {
+                    label: "Best Fit Line",
+                    type: "line",
+                    data: regressionLine,
+                    fill: false,
+                    borderColor: "#00ccff",
+                    borderWidth: 2,
+                    tension: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: { display: true, text: "Concentration" },
+                    type: 'linear',
+                },
+                y: {
+                    title: { display: true, text: "Absorbance" },
+                    min: -1,
+                    max: 1
+                }
+            }
+        }
+    });
+
+    // Store regression model globally for prediction
+    window.regressionModel = { slope, intercept };
+}
+
+function predictConcentration() {
+    const input = parseFloat(document.getElementById("absorbancePredictInput").value);
+    const result = document.getElementById("predictedConcentration");
+
+    if (isNaN(input) || !window.regressionModel) {
+        result.textContent = "Please enter a valid absorbance.";
+        return;
+    }
+
+    const { slope, intercept } = window.regressionModel;
+    const predicted = (input - intercept) / slope;
+
+    result.textContent = `Predicted Concentration: ${predicted.toFixed(3)}`;
+}
+
+function displayRegressionEquation(m, b) {
+    const equationEl = document.getElementById("regressionEquation");
+    const formattedM = m.toFixed(3);
+    const formattedB = b >= 0 ? `+ ${b.toFixed(3)}` : `- ${Math.abs(b).toFixed(3)}`;
+    const latex = `A = ${formattedM} \\cdot c ${formattedB}`;
+
+    equationEl.innerHTML = `\\[${latex}\\]`;
+
+    if (window.MathJax) {
+        MathJax.typesetPromise([equationEl]);
+    }
+}
+
+// Default calibration values: [concentration, absorbance]
+const defaultCalibrationData = [
+    { concentration: 0.1, absorbance: 0.05 },
+    { concentration: 0.3, absorbance: 0.15 },
+    { concentration: 0.5, absorbance: 0.25 },
+    { concentration: 0.7, absorbance: 0.35 },
+    { concentration: 0.9, absorbance: 0.45 }
+];
+
+// Load default values into the inputs and update the chart
+function runOnOpencvLoad() {
+    console.log('OpenCV Loaded!');
+
+    defaultCalibrationData.forEach(({ concentration, absorbance }) => {
+        calibrationData.concentrations.push(concentration);
+        calibrationData.absorbances.push(absorbance);
+    });
+
+    plotCalibrationCurve(calibrationData.concentrations, calibrationData.absorbances);
+}

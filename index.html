@@ -4,10 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spectrum Absorbance Analysis</title>
-    <script async src="https://docs.opencv.org/master/opencv.js" onload="console.log('OpenCV Loaded!')"></script>
+    <script async src="https://docs.opencv.org/master/opencv.js" onload="runOnOpencvLoad()"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <link rel="stylesheet" href="styles.css">
+
+    <!-- MathJax for LaTeX Equations -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            },
+            options: {
+                renderActions: {
+                    addMenu: []
+                }
+            },
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body class="dark-mode">
     <div class="container">
@@ -22,6 +42,13 @@
             To begin the analysis, input the cropped spectrum of both the blank (empty cuvette without any solution) 
             and the sample (cuvette with the desired solution) in the respective input fields.
             </p>
+            <p><strong>Absorbance is calculated as:</strong></p>
+            <p>\[ A(\lambda) = \log_{10} \left( \frac{I_0(\lambda)}{I(\lambda)} \right) \]</p>
+            <p>Where \( I_0 \) is the intensity of the blank and \( I \) is the intensity of the sample.</p>
+
+            <p><strong>Calibration follows Beer's Law:</strong></p>
+            <p>\[ A = \epsilon \cdot c \cdot l \]</p>
+            <p>Where \( A \) is absorbance, \( \epsilon \) is molar absorptivity, \( c \) is concentration, and \( l \) is path length.</p>
         </div>
 
         <!-- Image display sections -->
@@ -77,7 +104,38 @@
                 <h3>Total Absorbance</h3>
                 <canvas id="totalAbsorbanceChart"></canvas>
             </div>
+
+            <div class="chart-container">
+                <h3>Absorbance at Key Wavelengths</h3>
+                <canvas id="majorAbsorptionChart"></canvas>
+            </div>
         </section>
+
+        <div class="absorbance-result">
+            <h3 id="finalAbsorbanceValue">Final Absorbance: -</h3>
+        </div>
+
+        <section class="calibration-section">
+            <h2>Calibration Curve</h2>
+            <form id="calibrationForm">
+                <div class="input-row">
+                    <input type="number" step="any" placeholder="Concentration (e.g. 0.5)" id="concentrationInput" required>
+                    <input type="number" step="any" placeholder="Absorbance (e.g. 0.3)" id="absorbanceInput" required>
+                    <button type="submit">Add Point</button>
+                </div>
+            </form>
+            <canvas id="calibrationChart"></canvas>
+        </section>
+
+        <div id="regressionEquation" class="regression-output"></div>
+
+        <!-- Optional: Predict concentration from absorbance -->
+        <div class="predict-section">
+            <input type="number" step="any" id="absorbancePredictInput" placeholder="Enter absorbance">
+            <button onclick="predictConcentration()">Predict Concentration</button>
+            <div id="predictedConcentration"></div>
+        </div>
+
     </div>
 
     <script src="script.js"></script>

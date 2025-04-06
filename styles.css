@@ -22,7 +22,7 @@
 
 /* ✨ Global Styling */
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Inter', sans-serif;
     background: var(--bg-color);
     color: var(--text-color);
     margin: 0;
@@ -209,8 +209,8 @@ header p {
 
 .instructions {
     text-align: center;
-    background: #f4f4f4;
-    color: #1e1e1e;
+    background: #1e1e1e;
+    color: #dfdfdf;
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 20px;
@@ -235,9 +235,102 @@ header p {
     width: 100%;
     max-height: 200px;
     object-fit: contain;
-    border: 1px solid #ddd;
+    border: 1px solid #1e1e1e;
     border-radius: 8px;
     padding: 5px;
-    background: #fff;
+    background: #1e1e1e;
 }
 
+.absorbance-result {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 15px;
+    color: white;
+}
+
+.calibration-section {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #222;
+    border-radius: 10px;
+    color: #fff;
+}
+
+.input-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+
+.input-row input {
+    padding: 8px;
+    width: 40%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.input-row button {
+    padding: 8px 16px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#calibrationChart {
+    width: 100%;
+    height: 300px;
+}
+
+.regression-output {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1em;
+    color: #ccc;
+}
+
+.predict-section {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.predict-section input {
+    padding: 8px;
+    width: 40%;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #888;
+}
+
+.predict-section button {
+    padding: 8px 16px;
+    margin-left: 10px;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#predictedConcentration {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.instructions p {
+    font-size: 15px;
+    margin: 8px 0;
+}
+
+mjx-container {
+    font-size: 1.1em;
+    display: inline;
+    text-align: center;
+    margin: 10px 0;
+}
